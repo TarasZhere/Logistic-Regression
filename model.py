@@ -48,7 +48,6 @@ class LogisticRegressionModel:
         gradient = {"dw": dw, "db": db}
 
         return gradient
-        pass
 
     def sigmoid(self, x):
         return 1/(1+np.exp(-x))
