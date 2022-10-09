@@ -16,38 +16,44 @@ from scipy.optimize import fmin_tnc
 
 class LogisticRegressionModel:
     
-    def __init__(self):
-        self.weights = None
-        self.B = 0
+    def __init__(self, n_features ):
+        self.weights = np.zeros((1, n_features))
+        self.b = 0
         pass
  
-    def cost_function(self, theta, x, y):
+    def cost_function(self, X, y):
         # Computes the cost function for all the training samples
         # TODO: implement this function	
 
-        # cost = -1(1/m)*np.sum(y*np.log(A) + (1-y)*np.log(1-A))
+        m = X.shape[0] #rows
+        Y_T = y.T # Transposition
+        sigma = self.sigmoid(np.dot(self.weights,X.T)+self.b)
 
-        
-        if y: return -1(1/m)*np.sum(y*np.log(A))
-
-        return -1(1/m)*np.sum(np.log(1-A))
-
+        return (-1/m)*(np.sum((Y_T*np.log(sigma)) + ((1-Y_T)*(np.log(1-sigma)))))
         pass
 
 
 
 
-    def gradient(self, theta, x, y):
+    def gradient(self, theta, X, y):
         # Computes the gradient of the cost function at the point theta
-        # TODO: implement this function	
+        # TODO: implement this function
 
+        m = X.shape[0]
 
+        #Gradient calculation
+        dw = (1/m)*(np.dot(X.T, (theta-y.T).T))
+        db = (1/m)*(np.sum(theta-y.T))
+        
+        gradient = {"dw": dw, "db": db}
+
+        return gradient
         pass
 
     def sigmoid(self, x):
         return 1/(1+np.exp(-x))
 
-    def fit(self, X, y, learning_rate, iterations = 100):
+    def fit(self, X, y, learning_rate=0.0001, iterations = 100):
         """trains the model from the training data
         
         Parameters
@@ -63,26 +69,11 @@ class LogisticRegressionModel:
         -------
         final optimized set of parameters theta
         """
-        # TODO: implement this function	
-
-        n = X.shape[0] # Number of samples
-        m = X.shape[1] # Number of features
-        self.weights = np.zeros((n,1))
-        cost_list= []
-
+        # TODO: implement this function
+        costs = []
         for i in range(iterations):
-            Z = np.dot(self.weights.T, X) + self.B
-            A = self.sigmoid(Z)
-
-            cost = -1(1/m)*np.sum(y*np.log(A) + (1-y)*np.log(1-A))
-
-            dW = (1/m)*np.dot(A-y, X.T)
-            dB = (1/m)*np.dot(A- y)
-
-            self.weights -= learning_rate*dW.T
-            self.B -= learning_rate*dB
-
-            cost_list.append(cost)
+            cost = self.cost_function(X, y)
+            gradient = self.gradient(X, y)
 
         pass
 
