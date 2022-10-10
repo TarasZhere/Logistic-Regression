@@ -16,43 +16,28 @@ from scipy.optimize import fmin_tnc
 
 class LogisticRegressionModel:
     
-    def __init__(self, n_features ):
-        self.weights = np.zeros((1, n_features))
-        self.b = 0
-        pass
+    def __init__(self):
+        self.w = None
+        self.b = None
  
-    def cost_function(self, X, y):
+    def cost_function(self, theta, y):
         # Computes the cost function for all the training samples
         # TODO: implement this function	
-
-        m = X.shape[0] #rows
-        Y_T = y.T # Transposition
-        sigma = self.sigmoid(np.dot(self.weights,X.T)+self.b)
-
-        return (-1/m)*(np.sum((Y_T*np.log(sigma)) + ((1-Y_T)*(np.log(1-sigma)))))
-        pass
-
-
-
+        return -(1/self.m)*np.sum(y*np.log(theta) + (1-y)*np.log(1-theta))
 
     def gradient(self, theta, X, y):
         # Computes the gradient of the cost function at the point theta
         # TODO: implement this function
+        return {
+                "dw":(1/self.m)*np.dot(theta-y, X.T), 
+                "db":(1/self.m)*np.sum(theta-y)
+            }
 
-        m = X.shape[0]
-
-        #Gradient calculation
-        dw = (1/m)*(np.dot(X.T, (theta-y.T).T))
-        db = (1/m)*(np.sum(theta-y.T))
-        
-        gradient = {"dw": dw, "db": db}
-
-        return gradient
 
     def sigmoid(self, x):
-        return 1/(1+np.exp(-x))
+        return 1.0/(1+np.exp(-x))
 
-    def fit(self, X, y, learning_rate=0.0001, iterations = 100):
+    def fit(self, X, y, learning_rate=0.0015, iterations = 100000):
         """trains the model from the training data
         
         Parameters
@@ -69,14 +54,30 @@ class LogisticRegressionModel:
         final optimized set of parameters theta
         """
         # TODO: implement this function
+
+        self.n, self.m = X.shape
+        self.w = np.zeros((self.n, 1), dtype=float)
+        self.b = 0
+
         costs = []
         for i in range(iterations):
-            cost = self.cost_function(X, y)
-            gradient = self.gradient(X, y)
+
+            z = np.dot(self.w.T, X) + self.b
+
+            theta = self.sigmoid(z)
+
+            cost = self.cost_function(theta, y)
+
+            costs.append(cost)
+
+            gradient = self.gradient(theta, X, y)
+
+            self.w -= learning_rate*gradient['dw'].T
+            self.b -= learning_rate*gradient['db']
 
         pass
 
-    def predict(self, x, theta, probab_threshold=0.5):
+    def predict(self, x, probab_threshold=0.5):
         """ Predicts the class labels
         Parameters: 
         ----------
@@ -90,9 +91,12 @@ class LogisticRegressionModel:
         """
         #TODO implement this function
 
+        predictions = self.sigmoid(np.dot(self.w.T, x) + self.b)
+
+        return [1 if i >= probab_threshold else 0 for i in predictions.T]
 
 
-        pass
+
 
     def accuracy(self, predicted_classes, actual_classes):
         """Computes the accuracy of the classifier
@@ -108,6 +112,13 @@ class LogisticRegressionModel:
         """
 		#TODO implement this function
 
+        m = len(predicted_classes)
+        acc = 0
 
+        for i in range(m):
+            if predicted_classes[i] == actual_classes[i]:
+                acc +=1
+
+        print(f"Predition accuracy by implemented model: {int(round(acc/m*100, 2))}%")
 
         pass
